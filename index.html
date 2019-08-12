@@ -11,9 +11,9 @@
   <link rel="stylesheet" href="./bootstrap-datetimepicker.min.css">
   <style>
     .main {
-      width: 1000px;
+      max-width: 1000px;
       margin: 0 auto 0 auto;
-      padding-top: 100px;
+      padding: 100px 20px 0;
     }
 
     .spec .dropdown-menu {
@@ -25,6 +25,12 @@
     .spec {
       position: relative;
     }
+
+    .local-text{
+      color: rgb(175, 43, 43);
+      font-weight: 600;
+      margin-top: 5px;
+    }
   </style>
 </head>
 
@@ -33,18 +39,6 @@
     <div class="form-group spec">
       <label for="exampleInputEmail1">目的地国家</label>
       <input type="text" class="form-control" id="country" placeholder="">
-    </div>
-    <div class="form-group">
-      <label for="exampleInputEmail1">起飞-北京时间</label>
-      <input type="text" class="form-control" id="start" placeholder="" readonly>
-    </div>
-    <div class="form-group">
-      <label for="exampleInputEmail1">航行时间</label>
-      <input type="number" class="form-control" id="dura" placeholder="" onkeyup="changeEndDate(this)">
-    </div>
-    <div class="form-group">
-      <label for="exampleInputEmail1">落地-北京时间</label>
-      <input type="text" class="form-control" id="end" placeholder="" readonly>
     </div>
     <div class="checkbox">
       <label>
@@ -59,8 +53,20 @@
       <label for="exampleInputEmail1">夏时令结束时间</label>
       <input type="text" class="form-control" id="summerEnd" placeholder="" readonly>
     </div>
-    <button id="btn" type="button" class="btn btn-primary">查询</button>
-    <p>落地-当地时间: <span id="result"></span></p>
+    <div class="form-group">
+      <label for="exampleInputEmail1">起飞-北京时间</label>
+      <input type="text" class="form-control" id="start" placeholder="" readonly>
+      <p class="local-text">起飞-当地时间: <span id="localStart"></span></p>
+    </div>
+    <div class="form-group">
+      <label for="exampleInputEmail1">航行时间</label>
+      <input type="number" class="form-control" id="dura" placeholder="" onkeyup="changeEndDate(this)">
+    </div>
+    <div class="form-group">
+      <label for="exampleInputEmail1">落地-北京时间</label>
+      <input type="text" class="form-control" id="end" placeholder="" readonly>
+      <p class="local-text">落地-当地时间: <span id="localEnd"></span></p>
+    </div>
   </div>
 
   <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
@@ -77,10 +83,11 @@
     var start = $('#start');
     var dura = $('#dura');
     var end = $('#end');
+    var localStart = $('#localStart');
+    var localEnd = $('#localEnd');
     var summerStart = $('#summerStart');
     var summerEnd = $('#summerEnd');
     var check = $('#check');
-    var result = $('#result');
 
     var signDate = null;
     var formatTime = d3.timeFormat("%Y-%m-%d %H:%M");
@@ -89,12 +96,17 @@
     function changeEndDate(obj) {
       var duraTime = $(obj).val();
       end.val(formatTime(Date.parse(new Date(start.val())) + duraTime * oneHour));
+      calEndTime();
     }
-    $('#btn').click(function () {
+    start.change(function(){
+      var time = new Date(start.val());
+      var resultTime = Date.parse(time) + (signDate.reduce - 8) * oneHour;
+      localStart.text(formatTime(resultTime));
+    })
+    end.change(calEndTime);
+    function calEndTime() {
       var time = new Date(end.val());
       var resultTime = Date.parse(time) + (signDate.reduce - 8) * oneHour;
-
-
       if (check.is(':checked')) {
         var summerStartArr = summerStart.val().split(':');
         var summerEndArr = summerEnd.val().split(':');
@@ -111,19 +123,27 @@
         //   resultTime += oneHour;
         // }
       }
-      result.text(formatTime(resultTime));
-    });
+      localEnd.text(formatTime(resultTime));
+    }
 
     function init() {
-      $("#start").datetimepicker({
-        format: 'yyyy-mm-dd hh:ii'
+      start.datetimepicker({
+        format: 'yyyy-mm-dd hh:ii',
+        minuteStep: 1
       });
-      $("#end").datetimepicker({
-        format: 'yyyy-mm-dd hh:ii'
+      end.datetimepicker({
+        format: 'yyyy-mm-dd hh:ii',
+        minuteStep: 1
       });
-      $("#summerStart").datetimepicker({
+      summerStart.datetimepicker({
         startView: 1,
-        format: 'hh:ii'
+        format: 'hh:ii',
+        minuteStep: 1
+      });
+      summerEnd.datetimepicker({
+        startView: 1,
+        format: 'hh:ii',
+        minuteStep: 1
       });
       country.typeahead({
         source: source,
