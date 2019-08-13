@@ -26,7 +26,7 @@
       position: relative;
     }
 
-    .local-text{
+    .local-text {
       color: rgb(175, 43, 43);
       font-weight: 600;
       margin-top: 5px;
@@ -38,24 +38,24 @@
   <div class="main">
     <div class="form-group spec">
       <label for="exampleInputEmail1">目的地国家</label>
-      <input type="text" class="form-control" id="country" placeholder="">
+      <input type="text" class="form-control" id="country" placeholder="" onchange="calEndTime()">
     </div>
     <div class="checkbox">
       <label>
-        <input type="checkbox" id="check" value="y">当前国家是否有夏令时
+        <input type="checkbox" id="check" value="y" onchange="calEndTime()">当前国家是否有夏令时
       </label>
     </div>
     <div class="form-group">
       <label for="exampleInputEmail1">夏时令开始时间</label>
-      <input type="text" class="form-control" id="summerStart" placeholder="" readonly>
+      <input type="text" class="form-control" id="summerStart" placeholder="" readonly onchange="calEndTime()">
     </div>
     <div class="form-group">
       <label for="exampleInputEmail1">夏时令结束时间</label>
-      <input type="text" class="form-control" id="summerEnd" placeholder="" readonly>
+      <input type="text" class="form-control" id="summerEnd" placeholder="" readonly onchange="calEndTime()">
     </div>
     <div class="form-group">
       <label for="exampleInputEmail1">起飞-北京时间</label>
-      <input type="text" class="form-control" id="start" placeholder="" readonly>
+      <input type="text" class="form-control" id="start" placeholder="" readonly onchange="calEndTime()">
       <p class="local-text">起飞-当地时间: <span id="localStart"></span></p>
     </div>
     <div class="form-group">
@@ -98,23 +98,20 @@
       end.val(formatTime(Date.parse(new Date(start.val())) + duraTime * oneHour));
       calEndTime();
     }
-    start.change(function(){
+    start.change(function () {
       var time = new Date(start.val());
       var resultTime = Date.parse(time) + (signDate.reduce - 8) * oneHour;
       localStart.text(formatTime(resultTime));
     })
     end.change(calEndTime);
+
     function calEndTime() {
       var time = new Date(end.val());
       var resultTime = Date.parse(time) + (signDate.reduce - 8) * oneHour;
       if (check.is(':checked')) {
-        var summerStartArr = summerStart.val().split(':');
-        var summerEndArr = summerEnd.val().split(':');
-        var resultDate = new Date(resultTime);
-        var resultHour = resultDate.getHours();
-        var resultMinute = resultDate.getMinutes();
-        if (resultHour >= summerStartArr[0] && resultHour < summerEndArr[0] || resultHour == summerEndArr[0] &&
-          resultMinute <= summerEndArr[1] || resultHour == summerStartArr[0] && resultMinute >= summerStartArr[1]) {
+        var summerStartTime = Date.parse(new Date(summerStart.val()));
+        var summerEndTime = Date.parse(new Date(summerEnd.val())) + oneHour * 24;
+        if (resultTime > summerStartTime && resultTime < summerEndTime) {
           resultTime += oneHour;
         }
         // else if(resultHour == summerEndArr[0] && resultMinute<=summerEndArr[1]){
@@ -136,14 +133,12 @@
         minuteStep: 1
       });
       summerStart.datetimepicker({
-        startView: 1,
-        format: 'hh:ii',
-        minuteStep: 1
+        format: 'yyyy-mm-dd',
+        minView: 3
       });
       summerEnd.datetimepicker({
-        startView: 1,
-        format: 'hh:ii',
-        minuteStep: 1
+        format: 'yyyy-mm-dd',
+        minView: 3
       });
       country.typeahead({
         source: source,
